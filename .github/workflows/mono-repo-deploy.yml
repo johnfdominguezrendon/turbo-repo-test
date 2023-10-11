@@ -1,6 +1,6 @@
 name: Pipeline
 on: 
-  push:
+#   push:
   pull_request:
 jobs:
   checks:
@@ -20,15 +20,13 @@ jobs:
         with:
           node-version: 18.x
         
-        
-
       - name: Install Dependencies
         run: npm install
       - name: Changeset
         id: changeset
         run: |
           echo ${{ env.TURBO_RUN_FILTER }}
-          content=npx turbo build --filter=$TURBO_RUN_FILTER --dry-run=json
+          content=npm run build --filter=$TURBO_RUN_FILTER --dry-run=json
         #   content="${content//'%'/'%25'}"
         #   content="${content//$'\n'/'%0A'}"
         #   content="${content//$'\r'/'%0D'}"
