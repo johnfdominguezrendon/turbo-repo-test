@@ -12,10 +12,16 @@ jobs:
       changed-app: ${{ steps.changed-app.outputs.result }}
       changed-docs: ${{ steps.changed-docs.outputs.result }}
     steps:
+      - name: List Files
+        run: |
+            ls -R
+
       - name: Setup Node.js 18.x
         uses: actions/setup-node@v2
         with:
           node-version: 18.x
+        
+        
 
       - name: Install Dependencies
         run: npm install
