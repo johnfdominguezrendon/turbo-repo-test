@@ -5,47 +5,17 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     name: Build
-    # ... more job settings (not relevent here)
     env:
       TURBO_RUN_FILTER: ${{ github.event_name == 'pull_request' && '...[origin/main]' || '...[HEAD^]' }}
     outputs:
-      # Defining a job output for used by the next jobs:
-      # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idoutputs
       changed-app: ${{ steps.changed-app.outputs.result }}
       changed-docs: ${{ steps.changed-docs.outputs.result }}
-
     steps:
-     - name: List Files
-       run: |
-        echo ${{ env.TURBO_RUN_FILTER}}
-
-    # ... all basic steps you need (checkout etc.)
-
-    #   - name: Changeset
-    #     id: changeset
-    #     # 1. We need the 'output' of a turbo dry-run to get a json with all affected packages of these run.
-    #     # 2. The multi line json string is transformed to a single line string.
-    #     # 3. The single line json string is set to an 'output' (or result) of this step.
-    #     run: |
-    #       content=`npm build --filter=$TURBO_RUN_FILTER --dry-run=json`
-    #       # the following lines are required for multi line json
-    #       content="${content//'%'/'%25'}"
-    #       content="${content//$'\n'/'%0A'}"
-    #       content="${content//$'\r'/'%0D'}"
-    #       echo "::set-output name=result::$content"
-
-    # #   - name: Changed app?
-    # #     id: changed-app
-    # #     # 1. Using the 'output' of the 'changeset' step inside the `if` to check if the specific app has changed
-    # #     # 2. When `true`, we store it in the 'output' of the current step.
-    # #     if: ${{ contains(fromJSON(steps.changeset.outputs.result).packages, 'app') }}
-    # #     run: |
-    # #       echo "::set-output name=result::true"
-
-    # #   - name: Changed docs?
-    # #     id: changed-docs
-    # #     # 1. Using the 'output' of the 'changeset' step inside the `if` to check if the specific app has changed
-    # #     # 2. When `true`, we store it in the 'output' of the current step.
-    # #     if: ${{ contains(fromJSON(steps.changeset.outputs.result).packages, 'docs') }}
-    # #     run: |
-    # #       echo "::set-output name=result::true"
+      - name: Changeset
+        id: changeset
+        run: |
+          content=`npm build --filter=$TURBO_RUN_FILTER --dry-run=json`
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          echo "::set-output name=result::$content"
