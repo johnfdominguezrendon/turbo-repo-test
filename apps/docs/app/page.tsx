@@ -8,7 +8,7 @@ function Gradient({
   small,
 }: {
   small?: boolean;
-  conic?: boolean;
+  conic?: boolean;  
   className?: string;
 }): JSX.Element {
   return (
