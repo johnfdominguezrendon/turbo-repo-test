@@ -27,7 +27,7 @@ jobs:
         run: |
           echo ${{ env.TURBO_RUN_FILTER }}
           content=`npx turbo build --filter=123 --dry-run=json`
-        #   content="${content//'%'/'%25'}"
-        #   content="${content//$'\n'/'%0A'}"
-        #   content="${content//$'\r'/'%0D'}"
-        #   echo "::set-output name=result::$content"
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          echo "::set-output name=result::$content"
