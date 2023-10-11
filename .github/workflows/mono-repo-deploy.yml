@@ -14,12 +14,10 @@ jobs:
       changed-app: ${{ steps.changed-app.outputs.result }}
       changed-docs: ${{ steps.changed-docs.outputs.result }}
 
-  steps: 
-     runs-on: ubuntu-latest
-     steps:
-      - name: List Files
-        run: |
-         echo ${{ env.TURBO_RUN_FILTER}}
+    steps:
+     - name: List Files
+       run: |
+        echo ${{ env.TURBO_RUN_FILTER}}
 
     # ... all basic steps you need (checkout etc.)
 
