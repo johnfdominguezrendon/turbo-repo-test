@@ -31,3 +31,10 @@ jobs:
           content="${content//$'\n'/'%0A'}"
           content="${content//$'\r'/'%0D'}"
           echo "::set-output name=result::$content"
+
+      - name: Changeset
+        run: |
+         echo ${{ steps.changeset.outputs.result }}
+
+
+    
