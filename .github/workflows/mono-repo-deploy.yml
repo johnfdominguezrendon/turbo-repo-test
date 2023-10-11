@@ -28,7 +28,7 @@ jobs:
         run: |
           echo '${{ env.TURBO_RUN_FILTER }}'
           npx turbo --version
-          npx turbo build --filter='...[origin/main]' --dry-run=json
+          npx turbo build --filter='[origin/main]' --dry-run=json
           content="${content//'%'/'%25'}"
           content="${content//$'\n'/'%0A'}"
           content="${content//$'\r'/'%0D'}"
