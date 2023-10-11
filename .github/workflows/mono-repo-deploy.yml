@@ -27,7 +27,7 @@ jobs:
         id: changeset
         run: |
           echo '${{ env.TURBO_RUN_FILTER }}'
-          content=$(npx turbo build --filter=${{ env.TURBO_RUN_FILTER }} --dry-run=json)
+          content=`npx turbo build --filter=$TURBO_RUN_FILTER --dry-run=json`
           content="${content//'%'/'%25'}"
           content="${content//$'\n'/'%0A'}"
           content="${content//$'\r'/'%0D'}"
