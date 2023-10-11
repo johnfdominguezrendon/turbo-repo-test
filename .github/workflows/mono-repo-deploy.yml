@@ -14,21 +14,21 @@ jobs:
       changed-app: ${{ steps.changed-app.outputs.result }}
       changed-docs: ${{ steps.changed-docs.outputs.result }}
 
-    # steps:
-    # # ... all basic steps you need (checkout etc.)
+    steps:
+    # ... all basic steps you need (checkout etc.)
 
-    #   - name: Changeset
-    #     id: changeset
-    #     # 1. We need the 'output' of a turbo dry-run to get a json with all affected packages of these run.
-    #     # 2. The multi line json string is transformed to a single line string.
-    #     # 3. The single line json string is set to an 'output' (or result) of this step.
-    #     run: |
-    #       content=`yarn build --filter=$TURBO_RUN_FILTER --dry-run=json`
-    #       # the following lines are required for multi line json
-    #       content="${content//'%'/'%25'}"
-    #       content="${content//$'\n'/'%0A'}"
-    #       content="${content//$'\r'/'%0D'}"
-    #       echo "::set-output name=result::$content"
+      - name: Changeset
+        id: changeset
+        # 1. We need the 'output' of a turbo dry-run to get a json with all affected packages of these run.
+        # 2. The multi line json string is transformed to a single line string.
+        # 3. The single line json string is set to an 'output' (or result) of this step.
+        run: |
+          content=`yarn build --filter=$TURBO_RUN_FILTER --dry-run=json`
+          # the following lines are required for multi line json
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          echo "::set-output name=result::$content"
 
     #   - name: Changed app?
     #     id: changed-app
