@@ -22,6 +22,7 @@ jobs:
         
       - name: Install Dependencies
         run: npm install
+
       - name: Changeset
         id: changeset
         run: |
@@ -32,9 +33,21 @@ jobs:
           content="${content//$'\r'/'%0D'}"
           echo "::set-output name=result::$content"
 
-      - name: Changeset
+      - name: Changed app?
+        id: changed-app
+        # 1. Using the 'output' of the 'changeset' step inside the `if` to check if the specific app has changed
+        # 2. When `true`, we store it in the 'output' of the current step.
+        if: ${{ contains(fromJSON(steps.changeset.outputs.result).packages, 'app') }}
         run: |
-         echo ${{ steps.changeset.outputs.result }}
+          echo "::set-output name=result::true"
+
+      - name: Changed docs?
+        id: changed-docs
+        # 1. Using the 'output' of the 'changeset' step inside the `if` to check if the specific app has changed
+        # 2. When `true`, we store it in the 'output' of the current step.
+        if: ${{ contains(fromJSON(steps.changeset.outputs.result).packages, 'docs') }}
+        run: |
+          echo "::set-output name=result::true"
 
 
     
