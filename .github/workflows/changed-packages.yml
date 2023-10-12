@@ -16,8 +16,8 @@ jobs:
     env:
       TURBO_RUN_FILTER: ${{ github.event_name == 'pull_request' && '...[origin/main]' || '...[HEAD^]' }}  
     outputs:
-      api_changed: ${{ steps.api-changed.outputs.changed }}
-      ui_changed: ${{ steps.ui-changed.outputs.changed }}
+      api_changed: ${{ steps.api-changed.outputs.result }}
+      ui_changed: ${{ steps.ui-changed.outputs.result }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -27,7 +27,7 @@ jobs:
         id: changeset
         run: |
           echo 'result<<CHANGESET_DELIMITER'>> $GITHUB_OUTPUT
-          echo "$(npx turbo build --filter=${{env.TURBO_RUN_FILTER }} --dry-run=json  --global-deps=.github/*)" >> $GITHUB_OUTPUT
+          echo "$(npx turbo build --filter=${{env.TURBO_RUN_FILTER }} --dry-run=json)" >> $GITHUB_OUTPUT
           echo 'CHANGESET_DELIMITER' >> $GITHUB_OUTPUT
 
       - name: Changeset
