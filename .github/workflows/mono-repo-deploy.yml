@@ -1,30 +1,36 @@
 name: Pipeline
 on: 
-  push:
+#   push:
+  pull_request:
 jobs:
   checks:
     runs-on: ubuntu-latest
     name: Build
-    # ... more job settings (not relevent here)
     env:
       TURBO_RUN_FILTER: ${{ github.event_name == 'pull_request' && '...[origin/main]' || '...[HEAD^]' }}
     outputs:
-      # Defining a job output for used by the next jobs:
-      # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idoutputs
       changed-app: ${{ steps.changed-app.outputs.result }}
       changed-docs: ${{ steps.changed-docs.outputs.result }}
-
     steps:
-    # ... all basic steps you need (checkout etc.)
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 18.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.x
+        
+      - name: Install Dependencies
+        run: npm install
 
       - name: Changeset
         id: changeset
-        # 1. We need the 'output' of a turbo dry-run to get a json with all affected packages of these run.
-        # 2. The multi line json string is transformed to a single line string.
-        # 3. The single line json string is set to an 'output' (or result) of this step.
         run: |
-          content=`yarn build --filter=$TURBO_RUN_FILTER --dry-run=json`
-          # the following lines are required for multi line json
+          echo '${{ env.TURBO_RUN_FILTER }}'
+          npx turbo --version
+          content=`npx turbo build --filter=${{env.TURBO_RUN_FILTER }} --dry-run=json`
           content="${content//'%'/'%25'}"
           content="${content//$'\n'/'%0A'}"
           content="${content//$'\r'/'%0D'}"
@@ -45,3 +51,6 @@ jobs:
         if: ${{ contains(fromJSON(steps.changeset.outputs.result).packages, 'docs') }}
         run: |
           echo "::set-output name=result::true"
+
+
+    

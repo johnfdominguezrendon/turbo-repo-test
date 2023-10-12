@@ -8,7 +8,7 @@ function Gradient({
   small,
 }: {
   small?: boolean;
-  conic?: boolean;
+  conic?: boolean;  
   className?: string;
 }): JSX.Element {
   return (
@@ -127,7 +127,7 @@ export default function Page(): JSX.Element {
       <div className={styles.grid}>
         {LINKS.map(({ title, href, description }) => (
           <Card className={styles.card} href={href} key={title} title={title}>
-            {description}
+            {description}{description}{description}
           </Card>
         ))}
       </div>
