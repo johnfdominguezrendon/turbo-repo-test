@@ -1,0 +1,30 @@
+name: turbo-repo-workflow
+on:
+  push:
+    branches:
+        - main
+  workflow_dispatch:
+jobs:
+    changed_packages:
+        name: 'Determine which apps changed'
+        uses: ./.github/workflows/changed-packages.yml
+    
+    deploy_api:
+        runs-on: ubuntu-latest
+        name: 'Deploy API'
+        needs: changed_packages
+        if: ${{ needs.changed_packages.outputs.api_changed == 'true' }}
+        steps:
+          - run: echo "Deploying API"
+            shell: bash
+
+    deploy_ui:
+        runs-on: ubuntu-latest
+        name: 'Deploy UI'
+        needs: changed_packages
+        if: ${{ needs.changed_packages.outputs.ui_changed == 'true' }}
+        steps:
+          - run: echo "Deploying UI"
+            shell: bash
+
+

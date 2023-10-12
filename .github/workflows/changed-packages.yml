@@ -1,0 +1,43 @@
+name: 'Determine changed packages'
+
+on: 
+  workflow_call:
+    outputs:
+        api_changed:
+            description: 'Indicates if the api or its dependencies have changed'
+            value: ${{ jobs.check-changes.outputs.api_changed }}
+        ui_changed:
+            description: 'Indicates if the ui or its dependencies have changed'
+            value: ${{ jobs.check-changes.outputs.ui_changed }}
+    
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    env:
+      TURBO_RUN_FILTER: ${{ github.event_name == 'pull_request' && '...[origin/main]' || '...[HEAD^]' }}  
+    outputs:
+      api_changed: ${{ steps.api-changed.outputs.changed }}
+      ui_changed: ${{ steps.ui-changed.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Changeset
+        id: changeset
+        run: |
+          echo 'result<<CHANGESET_DELIMITER'>> $GITHUB_OUTPUT
+          echo "npx turbo build --filter=${{env.TURBO_RUN_FILTER }} --dry-run=json  --global-deps=.github/*)" >> $GITHUB_OUTPUT
+          echo 'CHANGESET_DELIMITER' >> $GITHUB_OUTPUT
+
+      - name: 'Did the API or its dependencies change?'
+        id: api-changed
+        if: ${{ contains(fromJSON(steps.changeset.outputs.result).changed, 'docs') }}
+        run: echo result=true >> $GITHUB_OUTPUT
+
+      - name: 'Did the UI or its dependencies change?'
+        id: ui-changed
+        if: ${{ contains(fromJSON(steps.changeset.outputs.result).changed, 'web') }}
+        run: echo result=true >> $GITHUB_OUTPUT
+
+           
