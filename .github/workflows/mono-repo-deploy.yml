@@ -1,6 +1,6 @@
 name: Pipeline
 on: 
-  push:
+  # push:
   pull_request:
 jobs:
   checks:
@@ -40,7 +40,7 @@ jobs:
         id: changed-app
         # 1. Using the 'output' of the 'changeset' step inside the `if` to check if the specific app has changed
         # 2. When `true`, we store it in the 'output' of the current step.
-        if: ${{ contains(fromJSON(steps.changeset.outputs.result).packages, 'app') }}
+        if: ${{ contains(fromJSON(steps.changeset.outputs.result).packages, 'web') }}
         run: |
           echo "::set-output name=result::true"
 
@@ -51,6 +51,28 @@ jobs:
         if: ${{ contains(fromJSON(steps.changeset.outputs.result).packages, 'docs') }}
         run: |
           echo "::set-output name=result::true"
+
+  publish_app:
+    runs-on: ubuntu-latest
+    name: Publish app
+    needs: [checks]
+    # ... more job settings (not relevent here)
+    if: ${{ needs.checks.outputs.changed-app }}
+    # Now this job only runs when the 'output' of the previous step is `true` for `changed-app`
+    steps:
+      - name: Publish app
+        run: echo "deploy app"
+
+  deploy_docs:
+    runs-on: ubuntu-latest
+    name: Publish docs
+    needs: [checks]
+    # ... more job settings (not relevent here)
+    if: ${{ needs.checks.outputs.changed-docs }}
+    # Now this job only runs when the 'output' of the previous step is `true` for `changed-docs`
+    steps:
+      - name: Publish docs
+        run: echo "deploy docs"
 
 
     
