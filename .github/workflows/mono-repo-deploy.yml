@@ -1,6 +1,6 @@
 name: Pipeline
 on: 
-  push:
+  # push:
   pull_request:
 jobs:
   checks:
