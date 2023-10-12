@@ -30,6 +30,10 @@ jobs:
           echo "$(npx turbo build --filter=${{env.TURBO_RUN_FILTER }} --dry-run=json  --global-deps=.github/*)" >> $GITHUB_OUTPUT
           echo 'CHANGESET_DELIMITER' >> $GITHUB_OUTPUT
 
+      - name: Changeset
+        run: |
+          echo ${{ steps.changeset.outputs.result }} 
+
       - name: 'Did the API or its dependencies change?'
         id: api-changed
         if: ${{ contains(fromJSON(steps.changeset.outputs.result).changed, 'docs') }}
