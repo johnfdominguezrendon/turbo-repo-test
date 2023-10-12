@@ -27,7 +27,7 @@ jobs:
         id: changeset
         run: |
           echo 'result<<CHANGESET_DELIMITER'>> $GITHUB_OUTPUT
-          echo "npx turbo build --filter=${{env.TURBO_RUN_FILTER }} --dry-run=json  --global-deps=.github/*)" >> $GITHUB_OUTPUT
+          echo "$(npx turbo build --filter=${{env.TURBO_RUN_FILTER }} --dry-run=json  --global-deps=.github/*)" >> $GITHUB_OUTPUT
           echo 'CHANGESET_DELIMITER' >> $GITHUB_OUTPUT
 
       - name: 'Did the API or its dependencies change?'
