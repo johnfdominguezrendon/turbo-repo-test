@@ -40,7 +40,7 @@ jobs:
         id: changed-app
         # 1. Using the 'output' of the 'changeset' step inside the `if` to check if the specific app has changed
         # 2. When `true`, we store it in the 'output' of the current step.
-        if: ${{ contains(fromJSON(steps.changeset.outputs.result).packages, 'app') }}
+        if: ${{ contains(fromJSON(steps.changeset.outputs.result).packages, 'web') }}
         run: |
           echo "::set-output name=result::true"
 
