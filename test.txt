@@ -1,0 +1,389 @@
+result<<CHANGESET_DELIMITER
+{
+  "id": "2WfbVWfluRXySu9kAxiPBIs89dQ",
+  "version": "1",
+  "turboVersion": "1.10.15",
+  "monorepo": true,
+  "globalCacheInputs": {
+    "rootKey": "You don't understand! I coulda had class. I coulda been a contender. I could've been somebody, instead of a bum, which is what I am.",
+    "files": {},
+    "hashOfExternalDependencies": "2d900518956a417b",
+    "globalDotEnv": null,
+    "environmentVariables": {
+      "specified": {
+        "env": [],
+        "passThroughEnv": null
+      },
+      "configured": [],
+      "inferred": [],
+      "passthrough": null
+    }
+  },
+  "packages": [
+    "//",
+    "docs",
+    "ui",
+    "web"
+  ],
+  "envMode": "infer",
+  "frameworkInference": true,
+  "tasks": [
+    {
+      "taskId": "docs#build",
+      "task": "build",
+      "package": "docs",
+      "hash": "b432c47d53bf5092",
+      "inputs": {
+        ".eslintrc.js": "0e5e86f87ce475b5563e882c5d0e08cb4a84be56",
+        ".gitignore": "1437c53f70bc211ec65739ec4a8c2a4db5874c73",
+        "README.md": "d364535741404e474eb671fe2a47c28e199b5871",
+        "app/favicon.ico": "3f804c026c253d52f61b6f70ec351d1044e6bd8a",
+        "app/globals.css": "8eee6cbd4e772add488ade43bd5f6eb790a21669",
+        "app/layout.tsx": "5f90d111f8782d51d3ea036f82428b5d5af1a9a7",
+        "app/page.module.css": "0d8ed7e78f9ef66ef746a661dba1debf5bf2c98b",
+        "app/page.tsx": "e5f9647f7e93ba3d2708b67d8a39c445bf660313",
+        "next-env.d.ts": "4f11a03dc6cc37f2b5105c08f2e7b24c603ab2f4",
+        "next.config.js": "fdda6aa12cdb0b6ccd4e29e9db243e21d446a7b5",
+        "package.json": "88d56d226f9dc8bfcb554da26e882c0169a6087c",
+        "public/circles.svg": "6533be5ba0ca9f1b0da046b9f4f246c0fda613a3",
+        "public/next.svg": "5174b28c565c285e3e312ec5178be64fbeca8398",
+        "public/turborepo.svg": "2f9aa1f3761446649883ecef7650b311ec8e2643",
+        "public/vercel.svg": "d2f84222734f27b623d1c80dda3561b04d1284af",
+        "tsconfig.json": "644ee04f6c751ffa0878ad7798bcb1dcced1e19d"
+      },
+      "hashOfExternalDependencies": "c582541f79e1f47f",
+      "cache": {
+        "local": false,
+        "remote": false,
+        "status": "MISS",
+        "timeSaved": 0
+      },
+      "command": "next build",
+      "cliArguments": [],
+      "outputs": [
+        ".next/**"
+      ],
+      "excludedOutputs": [
+        ".next/cache/**"
+      ],
+      "logFile": "apps/docs/.turbo/turbo-build.log",
+      "directory": "apps/docs",
+      "dependencies": [
+        "eslint-config-custom#build",
+        "tsconfig#build",
+        "ui#build"
+      ],
+      "dependents": [],
+      "resolvedTaskDefinition": {
+        "outputs": [
+          "!.next/cache/**",
+          ".next/**"
+        ],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [],
+        "outputMode": "full",
+        "persistent": false,
+        "env": [],
+        "passThroughEnv": null,
+        "dotEnv": null
+      },
+      "expandedOutputs": [],
+      "framework": "nextjs",
+      "envMode": "loose",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": null
+        },
+        "configured": [],
+        "inferred": [],
+        "passthrough": null
+      },
+      "dotEnv": null
+    },
+    {
+      "taskId": "eslint-config-custom#build",
+      "task": "build",
+      "package": "eslint-config-custom",
+      "hash": "6838470555549394",
+      "inputs": {
+        "README.md": "8b42d901b0e8dee2e21313ec0442c50e9fef038a",
+        "library.js": "e87f73473775f6ade4cae9f17df596363a88f263",
+        "next.js": "466341b6e796f01e1480b66a4703f1af245d8d45",
+        "package.json": "afd988a557fc63fd8dec2ef0efb47f033a5f4d80",
+        "react-internal.js": "18581318904ef8c5736285da2a5b08f3e3c0e457"
+      },
+      "hashOfExternalDependencies": "8f22f4781f527483",
+      "cache": {
+        "local": false,
+        "remote": false,
+        "status": "MISS",
+        "timeSaved": 0
+      },
+      "command": "\u003cNONEXISTENT\u003e",
+      "cliArguments": [],
+      "outputs": [
+        ".next/**"
+      ],
+      "excludedOutputs": [
+        ".next/cache/**"
+      ],
+      "logFile": "packages/eslint-config-custom/.turbo/turbo-build.log",
+      "directory": "packages/eslint-config-custom",
+      "dependencies": [],
+      "dependents": [
+        "docs#build",
+        "ui#build",
+        "web#build"
+      ],
+      "resolvedTaskDefinition": {
+        "outputs": [
+          "!.next/cache/**",
+          ".next/**"
+        ],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [],
+        "outputMode": "full",
+        "persistent": false,
+        "env": [],
+        "passThroughEnv": null,
+        "dotEnv": null
+      },
+      "expandedOutputs": [],
+      "framework": "\u003cNO FRAMEWORK DETECTED\u003e",
+      "envMode": "loose",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": null
+        },
+        "configured": [],
+        "inferred": [],
+        "passthrough": null
+      },
+      "dotEnv": null
+    },
+    {
+      "taskId": "tsconfig#build",
+      "task": "build",
+      "package": "tsconfig",
+      "hash": "540db567e570ebeb",
+      "inputs": {
+        "base.json": "837bec347fae672ac2686a8060e96524d48baa46",
+        "nextjs.json": "d5010a1bbca3959eed7599acda273d46af155a16",
+        "package.json": "6efb83e14ce81b74221b0482c48e85a83e8e44e5",
+        "react-library.json": "36b62be3894dd7c2b7a1b3beb8b9659afdf4b4be"
+      },
+      "hashOfExternalDependencies": "ccab0b28617f1f56",
+      "cache": {
+        "local": false,
+        "remote": false,
+        "status": "MISS",
+        "timeSaved": 0
+      },
+      "command": "\u003cNONEXISTENT\u003e",
+      "cliArguments": [],
+      "outputs": [
+        ".next/**"
+      ],
+      "excludedOutputs": [
+        ".next/cache/**"
+      ],
+      "logFile": "packages/tsconfig/.turbo/turbo-build.log",
+      "directory": "packages/tsconfig",
+      "dependencies": [],
+      "dependents": [
+        "docs#build",
+        "ui#build",
+        "web#build"
+      ],
+      "resolvedTaskDefinition": {
+        "outputs": [
+          "!.next/cache/**",
+          ".next/**"
+        ],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [],
+        "outputMode": "full",
+        "persistent": false,
+        "env": [],
+        "passThroughEnv": null,
+        "dotEnv": null
+      },
+      "expandedOutputs": [],
+      "framework": "\u003cNO FRAMEWORK DETECTED\u003e",
+      "envMode": "loose",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": null
+        },
+        "configured": [],
+        "inferred": [],
+        "passthrough": null
+      },
+      "dotEnv": null
+    },
+    {
+      "taskId": "ui#build",
+      "task": "build",
+      "package": "ui",
+      "hash": "aa285ad0a35cf039",
+      "inputs": {
+        ".eslintrc.js": "d750d83f71c2d65cd9c8e900e6b946b23e1fd220",
+        "card.tsx": "a8456dd08e5a3f3bf3da92ec0291e8536764d8cf",
+        "index.tsx": "926b15113f248e2ae567f5385a47714632fc16a5",
+        "package.json": "b7e4c1272a666016f23c8241297890117a0ea700",
+        "tsconfig.json": "cd6c94d6e8b0c3b34c21ef652ef4d56c64b4a5df",
+        "turbo/generators/config.ts": "f8dc6e87b29adae0e612a934994cf39a3664889f",
+        "turbo/generators/templates/component.hbs": "cf7b6369c80a7bcb32deef6dc4638a394ff570ea"
+      },
+      "hashOfExternalDependencies": "2983d4374e9b7058",
+      "cache": {
+        "local": false,
+        "remote": false,
+        "status": "MISS",
+        "timeSaved": 0
+      },
+      "command": "\u003cNONEXISTENT\u003e",
+      "cliArguments": [],
+      "outputs": [
+        ".next/**"
+      ],
+      "excludedOutputs": [
+        ".next/cache/**"
+      ],
+      "logFile": "packages/ui/.turbo/turbo-build.log",
+      "directory": "packages/ui",
+      "dependencies": [
+        "eslint-config-custom#build",
+        "tsconfig#build"
+      ],
+      "dependents": [
+        "docs#build",
+        "web#build"
+      ],
+      "resolvedTaskDefinition": {
+        "outputs": [
+          "!.next/cache/**",
+          ".next/**"
+        ],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [],
+        "outputMode": "full",
+        "persistent": false,
+        "env": [],
+        "passThroughEnv": null,
+        "dotEnv": null
+      },
+      "expandedOutputs": [],
+      "framework": "\u003cNO FRAMEWORK DETECTED\u003e",
+      "envMode": "loose",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": null
+        },
+        "configured": [],
+        "inferred": [],
+        "passthrough": null
+      },
+      "dotEnv": null
+    },
+    {
+      "taskId": "web#build",
+      "task": "build",
+      "package": "web",
+      "hash": "dc0b85767d0f0615",
+      "inputs": {
+        ".eslintrc.js": "0e5e86f87ce475b5563e882c5d0e08cb4a84be56",
+        ".gitignore": "1437c53f70bc211ec65739ec4a8c2a4db5874c73",
+        "README.md": "3d7b63af7dc799adcbca64e00046bab21275045a",
+        "app/favicon.ico": "3f804c026c253d52f61b6f70ec351d1044e6bd8a",
+        "app/globals.css": "8eee6cbd4e772add488ade43bd5f6eb790a21669",
+        "app/layout.tsx": "5f90d111f8782d51d3ea036f82428b5d5af1a9a7",
+        "app/page.module.css": "0d8ed7e78f9ef66ef746a661dba1debf5bf2c98b",
+        "app/page.tsx": "10c9195ba5d030138dc19aeb6703e053df207d32",
+        "next-env.d.ts": "4f11a03dc6cc37f2b5105c08f2e7b24c603ab2f4",
+        "next.config.js": "fdda6aa12cdb0b6ccd4e29e9db243e21d446a7b5",
+        "package.json": "f93ce4b845b5e5d1ec40be680af7cb4fd6a0ec42",
+        "public/circles.svg": "6533be5ba0ca9f1b0da046b9f4f246c0fda613a3",
+        "public/next.svg": "5174b28c565c285e3e312ec5178be64fbeca8398",
+        "public/turborepo.svg": "2f9aa1f3761446649883ecef7650b311ec8e2643",
+        "public/vercel.svg": "d2f84222734f27b623d1c80dda3561b04d1284af",
+        "tsconfig.json": "644ee04f6c751ffa0878ad7798bcb1dcced1e19d"
+      },
+      "hashOfExternalDependencies": "c582541f79e1f47f",
+      "cache": {
+        "local": false,
+        "remote": false,
+        "status": "MISS",
+        "timeSaved": 0
+      },
+      "command": "next build",
+      "cliArguments": [],
+      "outputs": [
+        ".next/**"
+      ],
+      "excludedOutputs": [
+        ".next/cache/**"
+      ],
+      "logFile": "apps/web/.turbo/turbo-build.log",
+      "directory": "apps/web",
+      "dependencies": [
+        "eslint-config-custom#build",
+        "tsconfig#build",
+        "ui#build"
+      ],
+      "dependents": [],
+      "resolvedTaskDefinition": {
+        "outputs": [
+          "!.next/cache/**",
+          ".next/**"
+        ],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [],
+        "outputMode": "full",
+        "persistent": false,
+        "env": [],
+        "passThroughEnv": null,
+        "dotEnv": null
+      },
+      "expandedOutputs": [],
+      "framework": "nextjs",
+      "envMode": "loose",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": null
+        },
+        "configured": [],
+        "inferred": [],
+        "passthrough": null
+      },
+      "dotEnv": null
+    }
+  ],
+  "user": "",
+  "scm": {
+    "type": "git",
+    "sha": "7dff8c39c229d00ace843cd4b4d1c7f997a3629e",
+    "branch": "other/feat"
+  }
+}
+CHANGESET_DELIMITER
