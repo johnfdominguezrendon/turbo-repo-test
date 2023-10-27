@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  doc:
+    container_name: doc
+    build:
+      context: .
+      dockerfile: ./apps/docs/Dockerfile
+    restart: always
+    ports:
+      - 3000:3000
+    networks:
+      - doc_network
+  web:
+    container_name: web
+    build:
+      context: .
+      dockerfile: ./apps/web/Dockerfile
+    restart: always
+    ports:
+      - 3001:3001
+    networks:
+      - doc_network
+    
+networks:
+  doc_network:
+    external: true

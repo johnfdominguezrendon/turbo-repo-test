@@ -1,10 +1,9 @@
 name: turbo-repo-workflow
 on:
   push:
-  pull_request:
-    # branches:
-    #     - main
-#    workflow_dispatch:
+    branches:
+        - main
+  workflow_dispatch:
 jobs:
     changed_packages:
         name: 'Determine which apps changed'
