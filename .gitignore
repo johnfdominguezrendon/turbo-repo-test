@@ -5,10 +5,10 @@ node_modules
 .pnp
 .pnp.js
 
-# testing
+# testingoip
 coverage
 
-# next.js
+# next.jsuoip
 .next/
 out/
 build
