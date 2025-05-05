@@ -7,7 +7,7 @@ This is an official starter Turborepo.
 Run the following command:
 
 ```sh
-npx create-turbo@latest
+npx create-turbo@latestsss
 ```
 
 ## What's inside?
