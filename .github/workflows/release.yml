@@ -2,6 +2,9 @@ name: Manual Semantic Release
 
 on:
   workflow_dispatch:
+  
+permissions:
+  contents: write
 
 jobs:
   semantic_release:
