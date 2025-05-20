@@ -2,9 +2,6 @@ name: Manual Semantic Release
 
 on:
   workflow_dispatch:
-  
-permissions:
-  contents: write
 
 jobs:
   deploy_to_prod:
@@ -12,24 +9,30 @@ jobs:
     steps:
     - name: Deploy to production
       run: echo "Deploying to production"
-
+      
   semantic_release:
     runs-on: ubuntu-latest
-    needs: deploy_to_prod
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch full git history and tags
+          fetch-depth: 0
+
+      - name: Set up GitHub CLI
+        run: sudo apt-get install gh -y
+
+      - name: Authenticate gh
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
       - name: Get latest tag
-        id: get_latest_tag
         run: |
           latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           echo "LATEST_TAG=$latest_tag" >> $GITHUB_ENV
 
-      - name: Calculate next patch version
-        id: next_version
+      - name: Calculate next version
         run: |
           version=${LATEST_TAG#v}
           IFS='.' read -r major minor patch <<< "$version"
@@ -37,12 +40,13 @@ jobs:
           next_tag="v$major.$minor.$patch"
           echo "NEW_TAG=$next_tag" >> $GITHUB_ENV
 
-      - name: Generate changelog from last tag
+      - name: Generate changelog from PRs
+        id: changelog
         run: |
-          log=$(git log ${{ env.LATEST_TAG }}..HEAD --pretty=format:"- %s" --no-merges)
-          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-          echo "$log" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          changelog="What's Changed\n\n"
+          prs=$(gh pr list --state merged --search "merged:>${{ env.LATEST_TAG }}" --json number,title,author,mergedAt --jq '.[] | select(.mergedAt != null) | "- \(.title) by @\(.author.login) in #\(.number)"')
+          changelog+="$prs"
+          echo -e "CHANGELOG<<EOF\n$changelog\nEOF" >> $GITHUB_ENV
 
       - name: Create Git tag
         run: |
@@ -50,8 +54,6 @@ jobs:
           git config user.email "github-actions@users.noreply.github.com"
           git tag ${{ env.NEW_TAG }}
           git push origin ${{ env.NEW_TAG }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
