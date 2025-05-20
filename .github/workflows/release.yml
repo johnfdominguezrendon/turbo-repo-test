@@ -3,52 +3,64 @@ name: Manual Semantic Release
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  deploy_to_prod:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Deploy to production
-      run: echo "Deploying to production"
-      
   semantic_release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
     steps:
-      - name: Checkout code
+      - name: Checkout full history
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up GitHub CLI
-        run: sudo apt-get install gh -y
+        run: sudo apt-get update && sudo apt-get install -y gh
 
       - name: Authenticate gh
         run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
       - name: Get latest tag
+        id: get_latest_tag
         run: |
-          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "LATEST_TAG=$latest_tag" >> $GITHUB_ENV
+          latest=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "USING_TAG=$latest" >> $GITHUB_ENV
+          echo "Latest tag is $latest"
 
-      - name: Calculate next version
+      - name: Calculate next patch version
+        id: bump_version
         run: |
-          version=${LATEST_TAG#v}
-          IFS='.' read -r major minor patch <<< "$version"
+          base=${USING_TAG#v}
+          IFS='.' read -r major minor patch <<< "$base"
           patch=$((patch + 1))
-          next_tag="v$major.$minor.$patch"
-          echo "NEW_TAG=$next_tag" >> $GITHUB_ENV
+          next="v$major.$minor.$patch"
+          echo "NEW_TAG=$next" >> $GITHUB_ENV
+          echo "New tag will be $next"
 
       - name: Generate changelog from PRs
         id: changelog
         run: |
           changelog="What's Changed\n\n"
-          prs=$(gh pr list --state merged --search "merged:>${{ env.LATEST_TAG }}" --json number,title,author,mergedAt --jq '.[] | select(.mergedAt != null) | "- \(.title) by @\(.author.login) in #\(.number)"')
-          changelog+="$prs"
+
+          # Get PR numbers from merge commits between the last tag and HEAD
+          pr_numbers=$(git log ${{ env.USING_TAG }}..HEAD --merges --pretty=format:'%s' \
+                       | grep -oE '#[0-9]+' | tr -d '#' | sort -u)
+
+          if [ -z "$pr_numbers" ]; then
+            changelog+="No pull requests merged."
+          else
+            for pr in $pr_numbers; do
+              # Get PR details
+              info=$(gh pr view $pr --json title,author,number \
+                      --jq '"- \(.title) by @\(.author.login) in #\(.number)"')
+              changelog+="$info\n"
+            done
+          fi
+
           echo -e "CHANGELOG<<EOF\n$changelog\nEOF" >> $GITHUB_ENV
 
-      - name: Create Git tag
+      - name: Create & push Git tag
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
