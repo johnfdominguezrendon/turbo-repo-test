@@ -7,8 +7,15 @@ permissions:
   contents: write
 
 jobs:
+  deploy_to_prod:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy to production
+      run: echo "Deploying to production"
+
   semantic_release:
     runs-on: ubuntu-latest
+    needs: deploy_to_prod
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
