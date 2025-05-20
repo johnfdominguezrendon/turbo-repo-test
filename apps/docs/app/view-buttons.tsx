@@ -50,7 +50,7 @@
   position: relative;
   place-items: center;
 }
-
+//Added comment
 .heroContent {
   display: flex;
   position: relative;
@@ -74,8 +74,7 @@
     padding-top: 5rem;
     padding-bottom: 8rem;
   }
-}
-
+}//Added comment
 .logos {
   display: flex;
   z-index: 50;
