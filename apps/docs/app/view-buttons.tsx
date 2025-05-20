@@ -303,3 +303,10 @@
   height: 1000px;
   opacity: 0.15;
 }
+
+.backgroundGradient {
+  top: -500px;
+  width: 1000px;
+  height: 1000px;
+  opacity: 0.15;
+}
