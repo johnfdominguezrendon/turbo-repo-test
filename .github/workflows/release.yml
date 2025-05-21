@@ -32,7 +32,7 @@ jobs:
         id: bump_version
         run: |
           base=${USING_TAG#v}
-          SPLIT_FIELDS='.' read -r major minor patch <<< "$base"
+          IFS='.' read -r major minor patch <<< "$base"
           patch=$((patch + 1))
           next="v$major.$minor.$patch"
           echo "NEW_TAG=$next" >> $GITHUB_ENV
