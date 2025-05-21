@@ -33,6 +33,7 @@ jobs:
     - name: Run Semantic Release Logic
       shell: bash
       run: |
+         ls
          chmod +x ./github/workflows/entrypoint.sh 
          bash ./github/workflows/entrypoint.sh 
       env:
