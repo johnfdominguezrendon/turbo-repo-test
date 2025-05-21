@@ -26,17 +26,17 @@ jobs:
         run: |
           latest=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           echo "USING_TAG=$latest" >> $GITHUB_ENV
-          echo "Latest tag is $latest"
+          echo "The latest tag is $latest"
 
       - name: Calculate next patch version
         id: bump_version
         run: |
           base=${USING_TAG#v}
-          IFS='.' read -r major minor patch <<< "$base"
+          SPLIT_FIELDS='.' read -r major minor patch <<< "$base"
           patch=$((patch + 1))
           next="v$major.$minor.$patch"
           echo "NEW_TAG=$next" >> $GITHUB_ENV
-          echo "New tag will be $next"
+          echo "The new tag will be $next"
 
       - name: Generate changelog from PRs
         id: changelog
