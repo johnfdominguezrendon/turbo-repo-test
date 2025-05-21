@@ -34,7 +34,7 @@ jobs:
       shell: bash
       run: |
          ls
-         chmod +x ./github/workflows/entrypoint.sh 
-         bash ./github/workflows/entrypoint.sh 
+         chmod +x ./.github/workflows/entrypoint.sh 
+         bash ./.github/workflows/entrypoint.sh 
       env:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
