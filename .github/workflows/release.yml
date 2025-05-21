@@ -24,7 +24,6 @@ jobs:
       - name: Get latest tag
         id: get_latest_tag
         run: |
-          git fetch --tags
           latest=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           echo "USING_TAG=$latest" >> $GITHUB_ENV
           echo "The latest tag is $latest"
@@ -36,6 +35,13 @@ jobs:
           IFS='.' read -r major minor patch <<< "$base"
           patch=$((patch + 1))
           next="v$major.$minor.$patch"
+          # if the tag already exists, keep bumping until it's unique
+          while git rev-parse "$next" >/dev/null 2>&1; do
+            echo "Tag $next already exists, bumping patch..."
+            patch=$((patch + 1))
+            next="v$major.$minor.$patch"
+          done
+          
           echo "NEW_TAG=$next" >> $GITHUB_ENV
           echo "The new tag will be $next"
 
