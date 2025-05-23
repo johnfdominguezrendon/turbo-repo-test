@@ -23,6 +23,7 @@
   z-index: 2;
   font-family: var(--font-mono);
 }
+}
 
 .description a {
   display: flex;
