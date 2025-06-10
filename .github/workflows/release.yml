@@ -11,6 +11,7 @@ env:
 jobs:
   prepare_release:
     runs-on: ubuntu-latest
+    environment: pre-release
     outputs:
       changelog: ${{ steps.changelog.outputs.changelog }}
     steps:
@@ -73,6 +74,8 @@ jobs:
 
   deploy_to_production:
     runs-on: ubuntu-latest
+    environment: production
+    needs: prepare_release
     steps:
       - name: Checkout full history
         uses: actions/checkout@v4
