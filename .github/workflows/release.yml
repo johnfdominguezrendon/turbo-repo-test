@@ -40,7 +40,7 @@ jobs:
           changelog="What's Changed\n\n"
 
           pr_numbers=$(git log ${{ env.USING_TAG }}..HEAD --merges --pretty=format:'%s' \
-                       | grep -oE '#[0-9]+' | tr -d '#' | sort -u)
+                      | grep -oE '#[0-9]+' | tr -d '#' | sort -u)
 
           if [ -z "$pr_numbers" ]; then
             changelog+="No pull requests merged."
@@ -52,17 +52,14 @@ jobs:
             done
           fi
 
-          # Export changelog for other jobs
-          echo "${changelog}" > changelog.txt
-          changelog_output=$(cat changelog.txt)
-          changelog_output="${changelog_output//'%'/'%25'}"
-          changelog_output="${changelog_output//$'\n'/'%0A'}"
-          changelog_output="${changelog_output//$'\r'/'%0D'}"
+          # Save to file
+          echo -e "$changelog" > changelog.txt
 
-          echo "changelog=$changelog_output" >> $GITHUB_OUTPUT
-          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-          echo "$changelog" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          # Output as multiline
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          cat changelog.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
 
       - name: Create & push Git tag
         run: |
