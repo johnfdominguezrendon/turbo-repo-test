@@ -7,7 +7,8 @@ permissions:
   contents: write
 
 env:
-  APP_VERSION: '1.0.21'  # Default version, will be updated dynamically
+  APP_VERSION: '1.0.22'  # Default version, will be updated dynamically
+
 jobs:
   prepare_release:
     runs-on: ubuntu-latest
@@ -38,7 +39,6 @@ jobs:
         run: |
           changelog="What's Changed\n\n"
 
-          # Get PR numbers from merge commits between the last tag and HEAD
           pr_numbers=$(git log ${{ env.USING_TAG }}..HEAD --merges --pretty=format:'%s' \
                        | grep -oE '#[0-9]+' | tr -d '#' | sort -u)
 
@@ -46,14 +46,23 @@ jobs:
             changelog+="No pull requests merged."
           else
             for pr in $pr_numbers; do
-              # Get PR details
               info=$(gh pr view $pr --json title,author,number \
                       --jq '"- \(.title) by @\(.author.login) in #\(.number)"')
               changelog+="$info\n"
             done
           fi
 
-          echo -e "CHANGELOG<<EOF\n$changelog\nEOF" >> $GITHUB_ENV
+          # Export changelog for other jobs
+          echo "${changelog}" > changelog.txt
+          changelog_output=$(cat changelog.txt)
+          changelog_output="${changelog_output//'%'/'%25'}"
+          changelog_output="${changelog_output//$'\n'/'%0A'}"
+          changelog_output="${changelog_output//$'\r'/'%0D'}"
+
+          echo "changelog=$changelog_output" >> $GITHUB_OUTPUT
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo "$changelog" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Create & push Git tag
         run: |
@@ -67,7 +76,7 @@ jobs:
         with:
           tag_name: v${{ env.APP_VERSION }}
           name: Pre-Release v${{ env.APP_VERSION }}
-          body: ${{ env.CHANGELOG }}
+          body: ${{ steps.changelog.outputs.changelog }}
           prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -103,7 +112,7 @@ jobs:
       - name: Recreate final release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ env.APP_VERSION }}
+          tag_name: v${{ env.APP_VERSION }}
           name: Release v${{ env.APP_VERSION }}
           body: ${{ needs.prepare_release.outputs.changelog }}
           prerelease: false
