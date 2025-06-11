@@ -82,22 +82,23 @@ jobs:
         env:
           APP_VERSION: ${{ env.APP_VERSION }}
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL_RELEASE }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          # Set default styling for a full release
+          # Default to a pre-release style…
           titleText="📦 Pre-Release: v${APP_VERSION}"
           txtColor="good"
           btnColor="positive"
           isPrerelease="true"
 
-          # If it's a pre-release, tweak styling
-          if [[ "isPrerelease" == "true" ]]; then
-            titleText="🧪 Pre-release: v${APP_VERSION}"
+          # …then override for warning (orange) styling
+          if [[ "$isPrerelease" == "true" ]]; then
+            titleText="📦 Pre-Release: v${APP_VERSION}"
             txtColor="warning"
             btnColor="destructive"
-            isPrerelease="true"
           fi
 
-          # Turn your changelog into a JSON string literal
+          # Escape the changelog into a JSON string literal
           rawNotes=$(printf '%s' "${{ steps.changelog.outputs.changelog }}" | jq -R -s .)
 
           # Send the Adaptive Card
@@ -138,12 +139,13 @@ jobs:
                 {
                   \"type\": \"Action.OpenUrl\",
                   \"title\": \"View Pre-Release on GitHub\",
-                  \"url\": \"GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/v${APP_VERSION}\",
+                  \"url\": \"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/v${APP_VERSION}\",
                   \"style\": \"$btnColor\"
                 }
               ]
             }" \
             "$TEAMS_WEBHOOK_URL"
+
 
   deploy_to_production:
     runs-on: ubuntu-latest
