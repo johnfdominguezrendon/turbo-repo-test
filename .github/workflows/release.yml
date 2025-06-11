@@ -86,16 +86,16 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           # Default to a pre-release style…
-          titleText="📦 Pre-Release: v${APP_VERSION}"
+          titleText="📦 Release: v${APP_VERSION}"
           txtColor="good"
           btnColor="positive"
           isPrerelease="true"
 
           # …then override for warning (orange) styling
           if [[ "$isPrerelease" == "true" ]]; then
-            titleText="📦 Pre-Release: v${APP_VERSION}"
-            txtColor="warning"
-            btnColor="destructive"
+            titleText="🟠 Pre-Release: v${APP_VERSION}"
+            txtColor="good"
+            btnColor="positive"
           fi
 
           # Escape the changelog into a JSON string literal
@@ -190,18 +190,17 @@ jobs:
           APP_VERSION: ${{ env.APP_VERSION }}
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL_RELEASE }}
         run: |
-          # Set default styling for a full release
+          # Default to a release style…
           titleText="📦 Release: v${APP_VERSION}"
           txtColor="good"
           btnColor="positive"
           isPrerelease="false"
 
-          # If it's a pre-release, tweak styling
-          if [[ "isPrerelease" == "true" ]]; then
-            titleText="🧪 Pre-release: v${APP_VERSION}"
-            txtColor="warning"
-            btnColor="destructive"
-            isPrerelease="true"
+          # …then override for warning (orange) styling
+          if [[ "$isPrerelease" == "true" ]]; then
+            titleText="🟠 Pre-Release: v${APP_VERSION}"
+            txtColor="good"
+            btnColor="positive"
           fi
 
           # Turn your changelog into a JSON string literal
