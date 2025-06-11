@@ -137,8 +137,8 @@ jobs:
               \"actions\": [
                 {
                   \"type\": \"Action.OpenUrl\",
-                  \"title\": \"View Release on GitHub\",
-                  \"url\": \"https://github.com/CoterieInsure/metrics-api/releases/tag/v${APP_VERSION}\",
+                  \"title\": \"View Pre-Release on GitHub\",
+                  \"url\": \"GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/v${APP_VERSION}\",
                   \"style\": \"$btnColor\"
                 }
               ]
@@ -192,7 +192,7 @@ jobs:
           titleText="📦 Release: v${APP_VERSION}"
           txtColor="good"
           btnColor="positive"
-          isPrerelease="true"
+          isPrerelease="false"
 
           # If it's a pre-release, tweak styling
           if [[ "isPrerelease" == "true" ]]; then
