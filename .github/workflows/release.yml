@@ -78,6 +78,73 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Notify Teams on Pre-Release
+        env:
+          APP_VERSION: ${{ env.APP_VERSION }}
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL_RELEASE }}
+        run: |
+          # Set default styling for a full release
+          titleText="📦 Pre-Release: v${APP_VERSION}"
+          txtColor="good"
+          btnColor="positive"
+          isPrerelease="true"
+
+          # If it's a pre-release, tweak styling
+          if [[ "isPrerelease" == "true" ]]; then
+            titleText="🧪 Pre-release: v${APP_VERSION}"
+            txtColor="warning"
+            btnColor="destructive"
+            isPrerelease="true"
+          fi
+
+          # Turn your changelog into a JSON string literal
+          rawNotes=$(printf '%s' "${{ steps.changelog.outputs.changelog }}" | jq -R -s .)
+
+          # Send the Adaptive Card
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"type\": \"AdaptiveCard\",
+              \"version\": \"1.0\",
+              \"body\": [
+                {
+                  \"type\": \"TextBlock\",
+                  \"weight\": \"Bolder\",
+                  \"size\": \"Large\",
+                  \"color\": \"$txtColor\",
+                  \"text\": \"$titleText\"
+                },
+                {
+                  \"type\": \"FactSet\",
+                  \"facts\": [
+                    { \"title\": \"Version:\", \"value\": \"v${APP_VERSION}\" },
+                    { \"title\": \"Commit:\",  \"value\": \"$GITHUB_SHA\" },
+                    { \"title\": \"Author:\",  \"value\": \"$GITHUB_ACTOR\" }
+                  ]
+                },
+                {
+                  \"type\": \"TextBlock\",
+                  \"text\": \"What's Changed\",
+                  \"weight\": \"Bolder\",
+                  \"wrap\": true
+                },
+                {
+                  \"type\": \"TextBlock\",
+                  \"text\": $rawNotes,
+                  \"wrap\": true
+                }
+              ],
+              \"actions\": [
+                {
+                  \"type\": \"Action.OpenUrl\",
+                  \"title\": \"View Release on GitHub\",
+                  \"url\": \"https://github.com/CoterieInsure/metrics-api/releases/tag/v${APP_VERSION}\",
+                  \"style\": \"$btnColor\"
+                }
+              ]
+            }" \
+            "$TEAMS_WEBHOOK_URL"
+
   deploy_to_production:
     runs-on: ubuntu-latest
     environment: production
@@ -115,3 +182,70 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify Teams on Final Release
+        env:
+          APP_VERSION: ${{ env.APP_VERSION }}
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL_RELEASE }}
+        run: |
+          # Set default styling for a full release
+          titleText="📦 Release: v${APP_VERSION}"
+          txtColor="good"
+          btnColor="positive"
+          isPrerelease="true"
+
+          # If it's a pre-release, tweak styling
+          if [[ "isPrerelease" == "true" ]]; then
+            titleText="🧪 Pre-release: v${APP_VERSION}"
+            txtColor="warning"
+            btnColor="destructive"
+            isPrerelease="true"
+          fi
+
+          # Turn your changelog into a JSON string literal
+          rawNotes=$(printf '%s' "${{ needs.prepare_release.outputs.changelog}}" | jq -R -s .)
+
+          # Send the Adaptive Card
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"type\": \"AdaptiveCard\",
+              \"version\": \"1.0\",
+              \"body\": [
+                {
+                  \"type\": \"TextBlock\",
+                  \"weight\": \"Bolder\",
+                  \"size\": \"Large\",
+                  \"color\": \"$txtColor\",
+                  \"text\": \"$titleText\"
+                },
+                {
+                  \"type\": \"FactSet\",
+                  \"facts\": [
+                    { \"title\": \"Version:\", \"value\": \"v${APP_VERSION}\" },
+                    { \"title\": \"Commit:\",  \"value\": \"$GITHUB_SHA\" },
+                    { \"title\": \"Author:\",  \"value\": \"$GITHUB_ACTOR\" }
+                  ]
+                },
+                {
+                  \"type\": \"TextBlock\",
+                  \"text\": \"What's Changed\",
+                  \"weight\": \"Bolder\",
+                  \"wrap\": true
+                },
+                {
+                  \"type\": \"TextBlock\",
+                  \"text\": $rawNotes,
+                  \"wrap\": true
+                }
+              ],
+              \"actions\": [
+                {
+                  \"type\": \"Action.OpenUrl\",
+                  \"title\": \"View Release on GitHub\",
+                  \"url\": \"GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/v${APP_VERSION}\",
+                  \"style\": \"$btnColor\"
+                }
+              ]
+            }" \
+            "$TEAMS_WEBHOOK_URL"
