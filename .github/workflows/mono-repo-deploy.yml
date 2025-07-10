@@ -71,7 +71,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y gh
 
       - name: Authenticate gh
-        run: echo "${{ secrets.REPO_TOKEN }}" | gh auth login --with-token
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
       - name: Get latest tag
         id: get_latest_tag
@@ -133,7 +133,7 @@ jobs:
             body: ${{ steps.changelog.outputs.changelog }}
             prerelease: true
         env:
-            GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Shorten GitHub SHA
         run: echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
