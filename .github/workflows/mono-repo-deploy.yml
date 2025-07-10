@@ -89,34 +89,47 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          set -x  # For debug logging
+          set -x
 
           APP_PATH="apps/docs"
-          TAG="${USING_TAG:-v0.0.0}"  # Use fallback if not defined
+          TAG="${USING_TAG:-v0.0.0}"
 
           echo "Generating changelog for changes in path: $APP_PATH (since $TAG)"
-          echo -e "What's Changed\n\n### docs\n" > changelog.txt
+          echo -e "### docs\n" > changelog.txt
 
-          pr_numbers=$(git log "$TAG"..HEAD --merges --pretty=format:'%s' -- "$APP_PATH" \
-                        | grep -oE '#[0-9]+' | tr -d '#' | sort -u || true)
+          # Get all commits that touched files in this path
+          commit_shas=$(git log "$TAG"..HEAD --pretty=format:'%H' -- "$APP_PATH" || true)
 
-          if [[ -z "$pr_numbers" ]]; then
+          if [[ -z "$commit_shas" ]]; then
             echo "_No changes in this app._" >> changelog.txt
           else
-            for pr in $pr_numbers; do
-              if info=$(gh pr view "$pr" --json title,author,number \
-                          --jq '"- \(.title) by @\(.author.login) (#\(.number))"' 2>/dev/null); then
-                echo "$info" >> changelog.txt
-              else
-                echo "⚠️ Failed to fetch PR #$pr" >> changelog.txt
+            pr_numbers=""
+            for sha in $commit_shas; do
+              pr=$(gh pr list --search "$sha" --state merged --json number --jq '.[0].number' 2>/dev/null || true)
+              if [[ -n "$pr" ]]; then
+                pr_numbers+="$pr"$'\n'
               fi
             done
+
+            unique_prs=$(echo "$pr_numbers" | sort -u)
+            if [[ -z "$unique_prs" ]]; then
+              echo "_No PRs found for changes in this app._" >> changelog.txt
+            else
+              for pr in $unique_prs; do
+                if info=$(gh pr view "$pr" --json title,author,number \
+                            --jq '"- \(.title) by @\(.author.login) (#\(.number))"' 2>/dev/null); then
+                  echo "$info" >> changelog.txt
+                else
+                  echo "⚠️ Failed to fetch PR #$pr" >> changelog.txt
+                fi
+              done
+            fi
           fi
 
-          # Output changelog
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           cat changelog.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+
 
       - name: Create & push Git tag
         run: |
@@ -250,34 +263,47 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          set -x  # For debug logging
+          set -x
 
           APP_PATH="apps/web"
-          TAG="${USING_TAG:-v0.0.0}"  # Use fallback if not defined
+          TAG="${USING_TAG:-v0.0.0}"
 
           echo "Generating changelog for changes in path: $APP_PATH (since $TAG)"
-          echo -e "What's Changed\n\n### web\n" > changelog.txt
+          echo -e "### web\n" > changelog.txt
 
-          pr_numbers=$(git log "$TAG"..HEAD --merges --pretty=format:'%s' -- "$APP_PATH" \
-                        | grep -oE '#[0-9]+' | tr -d '#' | sort -u || true)
+          # Get all commits that touched files in this path
+          commit_shas=$(git log "$TAG"..HEAD --pretty=format:'%H' -- "$APP_PATH" || true)
 
-          if [[ -z "$pr_numbers" ]]; then
+          if [[ -z "$commit_shas" ]]; then
             echo "_No changes in this app._" >> changelog.txt
           else
-            for pr in $pr_numbers; do
-              if info=$(gh pr view "$pr" --json title,author,number \
-                          --jq '"- \(.title) by @\(.author.login) (#\(.number))"' 2>/dev/null); then
-                echo "$info" >> changelog.txt
-              else
-                echo "⚠️ Failed to fetch PR #$pr" >> changelog.txt
+            pr_numbers=""
+            for sha in $commit_shas; do
+              pr=$(gh pr list --search "$sha" --state merged --json number --jq '.[0].number' 2>/dev/null || true)
+              if [[ -n "$pr" ]]; then
+                pr_numbers+="$pr"$'\n'
               fi
             done
+
+            unique_prs=$(echo "$pr_numbers" | sort -u)
+            if [[ -z "$unique_prs" ]]; then
+              echo "_No PRs found for changes in this app._" >> changelog.txt
+            else
+              for pr in $unique_prs; do
+                if info=$(gh pr view "$pr" --json title,author,number \
+                            --jq '"- \(.title) by @\(.author.login) (#\(.number))"' 2>/dev/null); then
+                  echo "$info" >> changelog.txt
+                else
+                  echo "⚠️ Failed to fetch PR #$pr" >> changelog.txt
+                fi
+              done
+            fi
           fi
 
-          # Output changelog
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           cat changelog.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+
 
       - name: Create & push Git tag
         run: |
