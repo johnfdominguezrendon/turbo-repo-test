@@ -18,6 +18,7 @@ WORKDIR /app
  
 # test if the turbo prune worked
 # # First install the dependencies (as they change less often)
+# # First install the dependencies (as they change less often)
 COPY .gitignore .gitignore
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/package-lock.json ./package-lock.json
