@@ -135,7 +135,7 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          tag_name="docs@v1.1.11"
+          tag_name="docs@v1.1.12"
 
           git tag "$tag_name"
           git push origin "$tag_name"
@@ -144,8 +144,8 @@ jobs:
       - name: Create Github Pre-release or Release
         uses: softprops/action-gh-release@v1
         with:
-            tag_name: docs@v1.1.11
-            name: docs@v1.1.11
+            tag_name: docs@v1.1.12
+            name: docs@v1.1.12
             body: ${{ steps.changelog.outputs.changelog }}
             prerelease: true
         env:
@@ -157,7 +157,7 @@ jobs:
 
       - name: Notify Teams on Pre-Release or Release
         env:
-          APP_VERSION: docs@v1.1.11
+          APP_VERSION: docs@v1.1.12
           APP_NAME: docs
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL_RELEASE }}
           GITHUB_SERVER_URL: ${{ github.server_url }}
@@ -309,7 +309,7 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          tag_name="app@v1.1.11"
+          tag_name="app@v1.1.12"
 
           git tag "$tag_name"
           git push origin "$tag_name"
@@ -318,8 +318,8 @@ jobs:
       - name: Create Github Pre-release or Release
         uses: softprops/action-gh-release@v1
         with:
-            tag_name: app@v1.1.11
-            name: app@v1.1.11
+            tag_name: app@v1.1.12
+            name: app@v1.1.12
             body: ${{ steps.changelog.outputs.changelog }}
             prerelease: true
         env:
@@ -331,7 +331,7 @@ jobs:
 
       - name: Notify Teams on Pre-Release or Release
         env:
-          APP_VERSION: app@v1.1.11
+          APP_VERSION: app@v1.1.12
           APP_NAME: app
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL_RELEASE }}
           GITHUB_SERVER_URL: ${{ github.server_url }}
