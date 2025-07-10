@@ -16,6 +16,7 @@ RUN apk add --no-cache libc6-compat
 RUN apk update
 WORKDIR /app
  
+# test if the turbo prune worked
 # # First install the dependencies (as they change less often)
 COPY .gitignore .gitignore
 COPY --from=builder /app/out/json/ .
