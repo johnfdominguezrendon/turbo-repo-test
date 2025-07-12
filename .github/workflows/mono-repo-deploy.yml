@@ -57,358 +57,358 @@ jobs:
         run: |
           echo "::set-output name=result::true"
 
-  release:
-    runs-on: ubuntu-latest
-    needs: checks
-    if: ${{ needs.checks.outputs.changed-docs }}
-    environment: 'pre-release'
-    outputs:
-      changelog: ${{ steps.changelog.outputs.changelog }}
-    steps:
-      - name: Checkout full history
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+  # release:
+  #   runs-on: ubuntu-latest
+  #   needs: checks
+  #   if: ${{ needs.checks.outputs.changed-docs }}
+  #   environment: 'pre-release'
+  #   outputs:
+  #     changelog: ${{ steps.changelog.outputs.changelog }}
+  #   steps:
+  #     - name: Checkout full history
+  #       uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Set up GitHub CLI
-        run: sudo apt-get update && sudo apt-get install -y gh
+  #     - name: Set up GitHub CLI
+  #       run: sudo apt-get update && sudo apt-get install -y gh
 
-      - name: Authenticate gh
-        run: echo "${{ secrets.REPO_TOKEN }}" | gh auth login --with-token
+  #     - name: Authenticate gh
+  #       run: echo "${{ secrets.REPO_TOKEN }}" | gh auth login --with-token
 
-      - name: Get latest tag
-        id: get_latest_tag
-        run: |
-          latest=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "USING_TAG=$latest" >> $GITHUB_ENV
-          echo "The latest tag is $latest"
-        shell: bash
+  #     - name: Get latest tag
+  #       id: get_latest_tag
+  #       run: |
+  #         latest=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+  #         echo "USING_TAG=$latest" >> $GITHUB_ENV
+  #         echo "The latest tag is $latest"
+  #       shell: bash
 
-      - name: Generate or reuse changelog
-        id: changelog
-        shell: bash
-        run: |
-          set -euo pipefail
-          set -x
+  #     - name: Generate or reuse changelog
+  #       id: changelog
+  #       shell: bash
+  #       run: |
+  #         set -euo pipefail
+  #         set -x
 
-          APP_PATH="apps/docs"
-          TAG="${USING_TAG:-v0.0.0}"
+  #         APP_PATH="apps/docs"
+  #         TAG="${USING_TAG:-v0.0.0}"
 
-          echo "Generating changelog for changes in path: $APP_PATH (since $TAG)"
-          echo -e "### docs\n" > changelog.txt
+  #         echo "Generating changelog for changes in path: $APP_PATH (since $TAG)"
+  #         echo -e "### docs\n" > changelog.txt
 
-          # Get all commits that touched files in this path
-          commit_shas=$(git log "$TAG"..HEAD --pretty=format:'%H' -- "$APP_PATH" || true)
+  #         # Get all commits that touched files in this path
+  #         commit_shas=$(git log "$TAG"..HEAD --pretty=format:'%H' -- "$APP_PATH" || true)
 
-          if [[ -z "$commit_shas" ]]; then
-            echo "_No changes in this app._" >> changelog.txt
-          else
-            pr_numbers=""
-            for sha in $commit_shas; do
-              pr=$(gh pr list --search "$sha" --state merged --json number --jq '.[0].number' 2>/dev/null || true)
-              if [[ -n "$pr" ]]; then
-                pr_numbers+="$pr"$'\n'
-              fi
-            done
+  #         if [[ -z "$commit_shas" ]]; then
+  #           echo "_No changes in this app._" >> changelog.txt
+  #         else
+  #           pr_numbers=""
+  #           for sha in $commit_shas; do
+  #             pr=$(gh pr list --search "$sha" --state merged --json number --jq '.[0].number' 2>/dev/null || true)
+  #             if [[ -n "$pr" ]]; then
+  #               pr_numbers+="$pr"$'\n'
+  #             fi
+  #           done
 
-            unique_prs=$(echo "$pr_numbers" | sort -u)
-            if [[ -z "$unique_prs" ]]; then
-              echo "_No PRs found for changes in this app._" >> changelog.txt
-            else
-              for pr in $unique_prs; do
-                if info=$(gh pr view "$pr" --json title,author,number \
-                            --jq '"- \(.title) by @\(.author.login) (#\(.number))"' 2>/dev/null); then
-                  echo "$info" >> changelog.txt
-                else
-                  echo "⚠️ Failed to fetch PR #$pr" >> changelog.txt
-                fi
-              done
-            fi
-          fi
+  #           unique_prs=$(echo "$pr_numbers" | sort -u)
+  #           if [[ -z "$unique_prs" ]]; then
+  #             echo "_No PRs found for changes in this app._" >> changelog.txt
+  #           else
+  #             for pr in $unique_prs; do
+  #               if info=$(gh pr view "$pr" --json title,author,number \
+  #                           --jq '"- \(.title) by @\(.author.login) (#\(.number))"' 2>/dev/null); then
+  #                 echo "$info" >> changelog.txt
+  #               else
+  #                 echo "⚠️ Failed to fetch PR #$pr" >> changelog.txt
+  #               fi
+  #             done
+  #           fi
+  #         fi
 
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          cat changelog.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-
-      - name: Create & push Git tag
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@users.noreply.github.com"
-          tag_name="docs@v1.1.13"
-
-          git tag "$tag_name"
-          git push origin "$tag_name"
-        shell: bash
-
-      - name: Create Github Pre-release or Release
-        uses: softprops/action-gh-release@v1
-        with:
-            tag_name: docs@v1.1.13
-            name: docs@v1.1.13
-            body: ${{ steps.changelog.outputs.changelog }}
-            prerelease: true
-        env:
-            GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
-
-      - name: Shorten GitHub SHA
-        run: echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Notify Teams on Pre-Release or Release
-        env:
-          APP_VERSION: docs@v1.1.13
-          APP_NAME: docs
-          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL_RELEASE }}
-          GITHUB_SERVER_URL: ${{ github.server_url }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          SHORT_SHA: ${{ env.SHORT_SHA }}
-
-        run: |
-          isPrerelease="true"
-          tag_name="${APP_NAME}@v${APP_VERSION}"
-
-          titleText="📦 Release: ${APP_NAME} v${APP_VERSION}"
-          txtColor="good"
-          btnColor="positive"
-          btnTitle="View Release on GitHub"
-
-          if [[ "$isPrerelease" == "true" ]]; then
-            titleText="🟠 Pre-Release: ${APP_NAME} v${APP_VERSION}"
-            txtColor="good"
-            btnColor="positive"
-            btnTitle="View Pre-Release on GitHub"
-          fi
-
-          # Escape changelog into JSON literal
-          rawNotes=$(printf '%s' "${{ steps.changelog.outputs.changelog }}" | jq -R -s .)
-
-          # Send the Adaptive Card
-          curl -X POST \
-          -H "Content-Type: application/json" \
-          -d "{
-            \"type\": \"AdaptiveCard\",
-            \"version\": \"1.0\",
-            \"body\": [
-              {
-                \"type\": \"TextBlock\",
-                \"weight\": \"Bolder\",
-                \"size\": \"Large\",
-                \"color\": \"$txtColor\",
-                \"text\": \"$titleText\"
-              },
-              {
-                \"type\": \"FactSet\",
-                \"facts\": [
-                  { \"title\": \"App:\", \"value\": \"${APP_NAME}\" },
-                  { \"title\": \"Version:\", \"value\": \"v${APP_VERSION}\" },
-                  { \"title\": \"Commit:\",  \"value\": \"${SHORT_SHA}\" },
-                  { \"title\": \"Author:\",  \"value\": \"$GITHUB_ACTOR\" },
-                  { \"title\": \"Repository:\",  \"value\": \"${GITHUB_REPOSITORY}\" }
-                ]
-              },
-              {
-                \"type\": \"TextBlock\",
-                \"text\": \"What's Changed\",
-                \"weight\": \"Bolder\",
-                \"wrap\": true
-              },
-              {
-                \"type\": \"TextBlock\",
-                \"text\": $rawNotes,
-                \"wrap\": true
-              }
-            ],
-            \"actions\": [
-              {
-                \"type\": \"Action.OpenUrl\",
-                \"title\": \"${btnTitle}\",
-                \"url\": \"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${tag_name}\",
-                \"style\": \"$btnColor\"
-              }
-            ]
-          }" \
-          "$TEAMS_WEBHOOK_URL"
-        shell: bash
-
-  release_web:
-    runs-on: ubuntu-latest
-    needs: checks
-    if: ${{ needs.checks.outputs.changed-app }}
-    environment: 'pre-release'
-    outputs:
-      changelog: ${{ steps.changelog.outputs.changelog }}
-    steps:
-      - name: Checkout full history
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up GitHub CLI
-        run: sudo apt-get update && sudo apt-get install -y gh
-
-      - name: Authenticate gh
-        run: echo "${{ secrets.REPO_TOKEN }}" | gh auth login --with-token
-
-      - name: Get latest tag
-        id: get_latest_tag
-        run: |
-          latest=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "USING_TAG=$latest" >> $GITHUB_ENV
-          echo "The latest tag is $latest"
-        shell: bash
-
-      - name: Generate or reuse changelog
-        id: changelog
-        shell: bash
-        run: |
-          set -euo pipefail
-          set -x
-
-          APP_PATH="apps/web"
-          TAG="${USING_TAG:-v0.0.0}"
-
-          echo "Generating changelog for changes in path: $APP_PATH (since $TAG)"
-          echo -e "### web\n" > changelog.txt
-
-          # Get all commits that touched files in this path
-          commit_shas=$(git log "$TAG"..HEAD --pretty=format:'%H' -- "$APP_PATH" || true)
-
-          if [[ -z "$commit_shas" ]]; then
-            echo "_No changes in this app._" >> changelog.txt
-          else
-            pr_numbers=""
-            for sha in $commit_shas; do
-              pr=$(gh pr list --search "$sha" --state merged --json number --jq '.[0].number' 2>/dev/null || true)
-              if [[ -n "$pr" ]]; then
-                pr_numbers+="$pr"$'\n'
-              fi
-            done
-
-            unique_prs=$(echo "$pr_numbers" | sort -u)
-            if [[ -z "$unique_prs" ]]; then
-              echo "_No PRs found for changes in this app._" >> changelog.txt
-            else
-              for pr in $unique_prs; do
-                if info=$(gh pr view "$pr" --json title,author,number \
-                            --jq '"- \(.title) by @\(.author.login) (#\(.number))"' 2>/dev/null); then
-                  echo "$info" >> changelog.txt
-                else
-                  echo "⚠️ Failed to fetch PR #$pr" >> changelog.txt
-                fi
-              done
-            fi
-          fi
-
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          cat changelog.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+  #         echo "changelog<<EOF" >> $GITHUB_OUTPUT
+  #         cat changelog.txt >> $GITHUB_OUTPUT
+  #         echo "EOF" >> $GITHUB_OUTPUT
 
 
-      - name: Create & push Git tag
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@users.noreply.github.com"
-          tag_name="app@v1.1.13"
+  #     - name: Create & push Git tag
+  #       run: |
+  #         git config user.name "github-actions"
+  #         git config user.email "github-actions@users.noreply.github.com"
+  #         tag_name="docs@v1.1.13"
 
-          git tag "$tag_name"
-          git push origin "$tag_name"
-        shell: bash
+  #         git tag "$tag_name"
+  #         git push origin "$tag_name"
+  #       shell: bash
 
-      - name: Create Github Pre-release or Release
-        uses: softprops/action-gh-release@v1
-        with:
-            tag_name: app@v1.1.13
-            name: app@v1.1.13
-            body: ${{ steps.changelog.outputs.changelog }}
-            prerelease: true
-        env:
-            GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+  #     - name: Create Github Pre-release or Release
+  #       uses: softprops/action-gh-release@v1
+  #       with:
+  #           tag_name: docs@v1.1.13
+  #           name: docs@v1.1.13
+  #           body: ${{ steps.changelog.outputs.changelog }}
+  #           prerelease: true
+  #       env:
+  #           GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
 
-      - name: Shorten GitHub SHA
-        run: echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
-        shell: bash
+  #     - name: Shorten GitHub SHA
+  #       run: echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+  #       shell: bash
 
-      - name: Notify Teams on Pre-Release or Release
-        env:
-          APP_VERSION: app@v1.1.13
-          APP_NAME: app
-          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL_RELEASE }}
-          GITHUB_SERVER_URL: ${{ github.server_url }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          SHORT_SHA: ${{ env.SHORT_SHA }}
+  #     - name: Notify Teams on Pre-Release or Release
+  #       env:
+  #         APP_VERSION: docs@v1.1.13
+  #         APP_NAME: docs
+  #         TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL_RELEASE }}
+  #         GITHUB_SERVER_URL: ${{ github.server_url }}
+  #         GITHUB_REPOSITORY: ${{ github.repository }}
+  #         SHORT_SHA: ${{ env.SHORT_SHA }}
 
-        run: |
-          isPrerelease="true"
-          tag_name="${APP_NAME}@v${APP_VERSION}"
+  #       run: |
+  #         isPrerelease="true"
+  #         tag_name="${APP_NAME}@v${APP_VERSION}"
 
-          titleText="📦 Release: ${APP_NAME} v${APP_VERSION}"
-          txtColor="good"
-          btnColor="positive"
-          btnTitle="View Release on GitHub"
+  #         titleText="📦 Release: ${APP_NAME} v${APP_VERSION}"
+  #         txtColor="good"
+  #         btnColor="positive"
+  #         btnTitle="View Release on GitHub"
 
-          if [[ "$isPrerelease" == "true" ]]; then
-            titleText="🟠 Pre-Release: ${APP_NAME} v${APP_VERSION}"
-            txtColor="good"
-            btnColor="positive"
-            btnTitle="View Pre-Release on GitHub"
-          fi
+  #         if [[ "$isPrerelease" == "true" ]]; then
+  #           titleText="🟠 Pre-Release: ${APP_NAME} v${APP_VERSION}"
+  #           txtColor="good"
+  #           btnColor="positive"
+  #           btnTitle="View Pre-Release on GitHub"
+  #         fi
 
-          # Escape changelog into JSON literal
-          rawNotes=$(printf '%s' "${{ steps.changelog.outputs.changelog }}" | jq -R -s .)
+  #         # Escape changelog into JSON literal
+  #         rawNotes=$(printf '%s' "${{ steps.changelog.outputs.changelog }}" | jq -R -s .)
 
-          # Send the Adaptive Card
-          curl -X POST \
-          -H "Content-Type: application/json" \
-          -d "{
-            \"type\": \"AdaptiveCard\",
-            \"version\": \"1.0\",
-            \"body\": [
-              {
-                \"type\": \"TextBlock\",
-                \"weight\": \"Bolder\",
-                \"size\": \"Large\",
-                \"color\": \"$txtColor\",
-                \"text\": \"$titleText\"
-              },
-              {
-                \"type\": \"FactSet\",
-                \"facts\": [
-                  { \"title\": \"App:\", \"value\": \"${APP_NAME}\" },
-                  { \"title\": \"Version:\", \"value\": \"v${APP_VERSION}\" },
-                  { \"title\": \"Commit:\",  \"value\": \"${SHORT_SHA}\" },
-                  { \"title\": \"Author:\",  \"value\": \"$GITHUB_ACTOR\" },
-                  { \"title\": \"Repository:\",  \"value\": \"${GITHUB_REPOSITORY}\" }
-                ]
-              },
-              {
-                \"type\": \"TextBlock\",
-                \"text\": \"What's Changed\",
-                \"weight\": \"Bolder\",
-                \"wrap\": true
-              },
-              {
-                \"type\": \"TextBlock\",
-                \"text\": $rawNotes,
-                \"wrap\": true
-              }
-            ],
-            \"actions\": [
-              {
-                \"type\": \"Action.OpenUrl\",
-                \"title\": \"${btnTitle}\",
-                \"url\": \"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${tag_name}\",
-                \"style\": \"$btnColor\"
-              }
-            ]
-          }" \
-          "$TEAMS_WEBHOOK_URL"
-        shell: bash
+  #         # Send the Adaptive Card
+  #         curl -X POST \
+  #         -H "Content-Type: application/json" \
+  #         -d "{
+  #           \"type\": \"AdaptiveCard\",
+  #           \"version\": \"1.0\",
+  #           \"body\": [
+  #             {
+  #               \"type\": \"TextBlock\",
+  #               \"weight\": \"Bolder\",
+  #               \"size\": \"Large\",
+  #               \"color\": \"$txtColor\",
+  #               \"text\": \"$titleText\"
+  #             },
+  #             {
+  #               \"type\": \"FactSet\",
+  #               \"facts\": [
+  #                 { \"title\": \"App:\", \"value\": \"${APP_NAME}\" },
+  #                 { \"title\": \"Version:\", \"value\": \"v${APP_VERSION}\" },
+  #                 { \"title\": \"Commit:\",  \"value\": \"${SHORT_SHA}\" },
+  #                 { \"title\": \"Author:\",  \"value\": \"$GITHUB_ACTOR\" },
+  #                 { \"title\": \"Repository:\",  \"value\": \"${GITHUB_REPOSITORY}\" }
+  #               ]
+  #             },
+  #             {
+  #               \"type\": \"TextBlock\",
+  #               \"text\": \"What's Changed\",
+  #               \"weight\": \"Bolder\",
+  #               \"wrap\": true
+  #             },
+  #             {
+  #               \"type\": \"TextBlock\",
+  #               \"text\": $rawNotes,
+  #               \"wrap\": true
+  #             }
+  #           ],
+  #           \"actions\": [
+  #             {
+  #               \"type\": \"Action.OpenUrl\",
+  #               \"title\": \"${btnTitle}\",
+  #               \"url\": \"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${tag_name}\",
+  #               \"style\": \"$btnColor\"
+  #             }
+  #           ]
+  #         }" \
+  #         "$TEAMS_WEBHOOK_URL"
+  #       shell: bash
+
+  # release_web:
+  #   runs-on: ubuntu-latest
+  #   needs: checks
+  #   if: ${{ needs.checks.outputs.changed-app }}
+  #   environment: 'pre-release'
+  #   outputs:
+  #     changelog: ${{ steps.changelog.outputs.changelog }}
+  #   steps:
+  #     - name: Checkout full history
+  #       uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+
+  #     - name: Set up GitHub CLI
+  #       run: sudo apt-get update && sudo apt-get install -y gh
+
+  #     - name: Authenticate gh
+  #       run: echo "${{ secrets.REPO_TOKEN }}" | gh auth login --with-token
+
+  #     - name: Get latest tag
+  #       id: get_latest_tag
+  #       run: |
+  #         latest=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+  #         echo "USING_TAG=$latest" >> $GITHUB_ENV
+  #         echo "The latest tag is $latest"
+  #       shell: bash
+
+  #     - name: Generate or reuse changelog
+  #       id: changelog
+  #       shell: bash
+  #       run: |
+  #         set -euo pipefail
+  #         set -x
+
+  #         APP_PATH="apps/web"
+  #         TAG="${USING_TAG:-v0.0.0}"
+
+  #         echo "Generating changelog for changes in path: $APP_PATH (since $TAG)"
+  #         echo -e "### web\n" > changelog.txt
+
+  #         # Get all commits that touched files in this path
+  #         commit_shas=$(git log "$TAG"..HEAD --pretty=format:'%H' -- "$APP_PATH" || true)
+
+  #         if [[ -z "$commit_shas" ]]; then
+  #           echo "_No changes in this app._" >> changelog.txt
+  #         else
+  #           pr_numbers=""
+  #           for sha in $commit_shas; do
+  #             pr=$(gh pr list --search "$sha" --state merged --json number --jq '.[0].number' 2>/dev/null || true)
+  #             if [[ -n "$pr" ]]; then
+  #               pr_numbers+="$pr"$'\n'
+  #             fi
+  #           done
+
+  #           unique_prs=$(echo "$pr_numbers" | sort -u)
+  #           if [[ -z "$unique_prs" ]]; then
+  #             echo "_No PRs found for changes in this app._" >> changelog.txt
+  #           else
+  #             for pr in $unique_prs; do
+  #               if info=$(gh pr view "$pr" --json title,author,number \
+  #                           --jq '"- \(.title) by @\(.author.login) (#\(.number))"' 2>/dev/null); then
+  #                 echo "$info" >> changelog.txt
+  #               else
+  #                 echo "⚠️ Failed to fetch PR #$pr" >> changelog.txt
+  #               fi
+  #             done
+  #           fi
+  #         fi
+
+  #         echo "changelog<<EOF" >> $GITHUB_OUTPUT
+  #         cat changelog.txt >> $GITHUB_OUTPUT
+  #         echo "EOF" >> $GITHUB_OUTPUT
+
+
+  #     - name: Create & push Git tag
+  #       run: |
+  #         git config user.name "github-actions"
+  #         git config user.email "github-actions@users.noreply.github.com"
+  #         tag_name="app@v1.1.13"
+
+  #         git tag "$tag_name"
+  #         git push origin "$tag_name"
+  #       shell: bash
+
+  #     - name: Create Github Pre-release or Release
+  #       uses: softprops/action-gh-release@v1
+  #       with:
+  #           tag_name: app@v1.1.13
+  #           name: app@v1.1.13
+  #           body: ${{ steps.changelog.outputs.changelog }}
+  #           prerelease: true
+  #       env:
+  #           GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+
+  #     - name: Shorten GitHub SHA
+  #       run: echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+  #       shell: bash
+
+  #     - name: Notify Teams on Pre-Release or Release
+  #       env:
+  #         APP_VERSION: app@v1.1.13
+  #         APP_NAME: app
+  #         TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL_RELEASE }}
+  #         GITHUB_SERVER_URL: ${{ github.server_url }}
+  #         GITHUB_REPOSITORY: ${{ github.repository }}
+  #         SHORT_SHA: ${{ env.SHORT_SHA }}
+
+  #       run: |
+  #         isPrerelease="true"
+  #         tag_name="${APP_NAME}@v${APP_VERSION}"
+
+  #         titleText="📦 Release: ${APP_NAME} v${APP_VERSION}"
+  #         txtColor="good"
+  #         btnColor="positive"
+  #         btnTitle="View Release on GitHub"
+
+  #         if [[ "$isPrerelease" == "true" ]]; then
+  #           titleText="🟠 Pre-Release: ${APP_NAME} v${APP_VERSION}"
+  #           txtColor="good"
+  #           btnColor="positive"
+  #           btnTitle="View Pre-Release on GitHub"
+  #         fi
+
+  #         # Escape changelog into JSON literal
+  #         rawNotes=$(printf '%s' "${{ steps.changelog.outputs.changelog }}" | jq -R -s .)
+
+  #         # Send the Adaptive Card
+  #         curl -X POST \
+  #         -H "Content-Type: application/json" \
+  #         -d "{
+  #           \"type\": \"AdaptiveCard\",
+  #           \"version\": \"1.0\",
+  #           \"body\": [
+  #             {
+  #               \"type\": \"TextBlock\",
+  #               \"weight\": \"Bolder\",
+  #               \"size\": \"Large\",
+  #               \"color\": \"$txtColor\",
+  #               \"text\": \"$titleText\"
+  #             },
+  #             {
+  #               \"type\": \"FactSet\",
+  #               \"facts\": [
+  #                 { \"title\": \"App:\", \"value\": \"${APP_NAME}\" },
+  #                 { \"title\": \"Version:\", \"value\": \"v${APP_VERSION}\" },
+  #                 { \"title\": \"Commit:\",  \"value\": \"${SHORT_SHA}\" },
+  #                 { \"title\": \"Author:\",  \"value\": \"$GITHUB_ACTOR\" },
+  #                 { \"title\": \"Repository:\",  \"value\": \"${GITHUB_REPOSITORY}\" }
+  #               ]
+  #             },
+  #             {
+  #               \"type\": \"TextBlock\",
+  #               \"text\": \"What's Changed\",
+  #               \"weight\": \"Bolder\",
+  #               \"wrap\": true
+  #             },
+  #             {
+  #               \"type\": \"TextBlock\",
+  #               \"text\": $rawNotes,
+  #               \"wrap\": true
+  #             }
+  #           ],
+  #           \"actions\": [
+  #             {
+  #               \"type\": \"Action.OpenUrl\",
+  #               \"title\": \"${btnTitle}\",
+  #               \"url\": \"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${tag_name}\",
+  #               \"style\": \"$btnColor\"
+  #             }
+  #           ]
+  #         }" \
+  #         "$TEAMS_WEBHOOK_URL"
+  #       shell: bash
 
   publish_app:
     runs-on: ubuntu-latest
     name: Publish app
-    needs: [checks, release]
+    needs: [checks]
     # ... more job settings (not relevent here)
     if: ${{ needs.checks.outputs.changed-app }}
     # Now this job only runs when the 'output' of the previous step is `true` for `changed-app`
@@ -419,7 +419,7 @@ jobs:
   deploy_docs:
     runs-on: ubuntu-latest
     name: Publish docs
-    needs: [checks, release]
+    needs: [checks]
     # ... more job settings (not relevent here)
     if: ${{ needs.checks.outputs.changed-docs }}
     # Now this job only runs when the 'output' of the previous step is `true` for `changed-docs`
@@ -430,7 +430,7 @@ jobs:
   create_prelease:
     runs-on: ubuntu-latest
     name: Publish docs
-    needs: [checks, release]
+    needs: [checks,deploy_docs,publish_app]
     # ... more job settings (not relevent here)
     if: ${{ needs.checks.outputs.changed-docs }}
     # Now this job only runs when the 'output' of the previous step is `true` for `changed-docs`
