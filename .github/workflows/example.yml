@@ -21,6 +21,8 @@ jobs:
       - name: Job A - Success Message
         run: echo "Job A completed successfully!"
     # This 'if' condition makes Job A skip unless the commit message contains "run A"
+    # This 'if' condition makes Job A skip unless the commit message contains "run A"
+
     if: contains(github.event.head_commit.message, 'run A')
 
   job_B:
