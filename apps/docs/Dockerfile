@@ -60,6 +60,8 @@ CMD [ "npm", "start", "--prefix", "apps/docs" ]
 # CMD [ "npm", "run", "start" ]
 # CMD [ "npm", "run", "start" ]
 # CMD [ "npm", "run", "start" ]
+# CMD [ "npm", "run", "start" ]
+
  
 
 

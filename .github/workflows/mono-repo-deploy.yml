@@ -427,15 +427,31 @@ jobs:
       - name: Publish docs
         run: echo "deploy docs"
 
-  create_prelease:
+  pre_release_gate:
     runs-on: ubuntu-latest
-    name: create_prelease
-    needs: [checks,deploy_docs,publish_app]
-    # ... more job settings (not relevent here)
-    # Now this job only runs when the 'output' of the previous step is `true` for `changed-docs`
+    needs: [publish_app, deploy_docs]
+    continue-on-error: true
+    outputs:
+      should_run: ${{ steps.gate.outputs.should_run }}
     steps:
-      - name: Create Pre-release
-        run: echo "create pre-release"
+      - name: Determine if any deployment succeeded
+        id: gate
+        run: |
+          echo "should_run=false" >> $GITHUB_OUTPUT
+
+          if [[ "${{ needs.publish_app.result }}" == "success" || "${{ needs.deploy_docs.result }}" == "success" ]]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          fi
+
+  # create_prelease:
+  #   runs-on: ubuntu-latest
+  #   name: create_prelease
+  #   needs: [checks,deploy_docs,publish_app]
+  #   # ... more job settings (not relevent here)
+  #   # Now this job only runs when the 'output' of the previous step is `true` for `changed-docs`
+  #   steps:
+  #     - name: Create Pre-release
+  #       run: echo "create pre-release"
 
 
 
