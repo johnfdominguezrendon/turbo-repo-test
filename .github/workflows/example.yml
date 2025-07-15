@@ -1,0 +1,74 @@
+name: Conditional OR Job Run Example
+
+on:
+  push:
+    branches:
+      - main # Trigger on pushes to the main branch
+
+jobs:
+  job_A:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Job A - Start
+        run: echo "Job A is starting..."
+
+      - name: Simulate work in Job A
+        run: |
+          echo "Doing some work in Job A..."
+          sleep 5 # Simulate a task taking time
+          echo "Job A work complete."
+
+      - name: Job A - Success Message
+        run: echo "Job A completed successfully!"
+    # This 'if' condition makes Job A skip unless the commit message contains "run A"
+    if: contains(github.event.head_commit.message, 'run A')
+
+  job_B:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Job B - Start
+        run: echo "Job B is starting..."
+
+      - name: Simulate work in Job B
+        run: |
+          echo "Doing some work in Job B..."
+          sleep 5 # Simulate a task taking time
+          echo "Job B work complete."
+
+      - name: Job B - Success Message
+        run: echo "Job B completed successfully!"
+    # This 'if' condition makes Job B skip unless the commit message contains "run B"
+    if: contains(github.event.head_commit.message, 'run B')
+
+  job_C:
+    runs-on: ubuntu-latest
+    # We need to declare needs to access the results of job_A and job_B
+    needs: [job_A, job_B]
+    # This 'if' ensures job_C is evaluated even if one of the 'needs' jobs failed or skipped.
+    # Without it, if a 'needs' job fails, job_C would typically be skipped entirely.
+    if: always() # Using always() allows job_C to run even if 'needs' fail/skip, then we check within steps
+
+    steps:
+      - name: Evaluate if Job C should run based on A or B's success
+        # This is the core "OR" logic: run this step if Job A succeeded OR Job B succeeded.
+        if: |
+          (needs.job_A.result == 'success' || needs.job_B.result == 'success')
+        run: |
+          echo "--- Job C is running because at least one of Job A or Job B succeeded! ---"
+          echo "Job A Status: ${{ needs.job_A.result }}"
+          echo "Job B Status: ${{ needs.job_B.result }}"
+          # Add your actual tasks for Job C here
+          echo "Performing Job C's main tasks..."
+          sleep 10 # Simulate Job C's work
+          echo "Job C's main tasks complete."
+
+      - name: Handle case where both Job A and Job B did NOT succeed
+        # This step will only run if the above 'if' condition (OR logic) was false.
+        # This means either both failed, both were skipped, or one failed and one skipped.
+        if: |
+          ! (needs.job_A.result == 'success' || needs.job_B.result == 'success')
+        run: |
+          echo "--- Job C is NOT performing its main tasks because neither Job A nor Job B succeeded. ---"
+          echo "Job A Status: ${{ needs.job_A.result }}"
+          echo "Job B Status: ${{ needs.job_B.result }}"
+          echo "No further action needed for Job C in this scenario."
