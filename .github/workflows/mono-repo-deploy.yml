@@ -427,21 +427,16 @@ jobs:
       - name: Publish docs
         run: echo "deploy docs"
 
-  pre_release_gate:
+  pre_release:
     runs-on: ubuntu-latest
     needs: [publish_app, deploy_docs]
-    continue-on-error: true
+    if: always()
     outputs:
       should_run: ${{ steps.gate.outputs.should_run }}
     steps:
       - name: Determine if any deployment succeeded
-        id: gate
-        run: |
-          echo "should_run=false" >> $GITHUB_OUTPUT
+        run: echo "Creating pre-release"
 
-          if [[ "${{ needs.publish_app.result }}" == "success" || "${{ needs.deploy_docs.result }}" == "success" ]]; then
-            echo "should_run=true" >> $GITHUB_OUTPUT
-          fi
 
   # create_prelease:
   #   runs-on: ubuntu-latest
