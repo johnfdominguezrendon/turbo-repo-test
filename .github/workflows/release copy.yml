@@ -24,7 +24,7 @@ jobs:
       - name: Get latest tag
         id: get_latest_tag
         run: |
-          latest=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          latest=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
           echo "USING_TAG=$latest" >> $GITHUB_ENV
           echo "The latest tag is $latest"
 
@@ -75,10 +75,11 @@ jobs:
           git push origin ${{ env.NEW_TAG }}
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.NEW_TAG }}
           name: Release ${{ env.NEW_TAG }}
           body: ${{ env.CHANGELOG }}
+          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
