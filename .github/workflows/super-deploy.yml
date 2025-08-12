@@ -8,22 +8,18 @@ concurrency:
   group: main-${{ github.workflow }}  # same group per workflow on main
   cancel-in-progress: true         
 jobs:
-    changed_packages:
-        name: 'Determine which apps changed'
-        uses: ./.github/workflows/changed-packages.yml
-    
+
     deploy_api:
         runs-on: ubuntu-latest 
         name: 'Deploy API'
-        needs: changed_packages
         steps:
           - run: echo "Deploying API"
-            shell: sleep 30
+            shell: sleep 60
 
     deploy_ui:
         runs-on: ubuntu-latest
         name: 'Deploy UI'
-        needs: [changed_packages, deploy_api]
+        needs: [deploy_api]
         steps:
           - run: echo "Deploying UI"
             shell: sleep 30
