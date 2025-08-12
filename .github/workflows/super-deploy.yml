@@ -6,7 +6,7 @@ on:
 
 concurrency:
   group: main-${{ github.workflow }}  # same group per workflow on main comment
-  cancel-in-progress: true         
+  cancel-in-progress: false         
 jobs:
 
     deploy_api:
