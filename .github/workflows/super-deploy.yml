@@ -1,9 +1,12 @@
 name: turbo-repo-workflow
 on:
-  # push:
-  #   branches:
-  #       - main
+  push:
+    branches: [main]
   workflow_dispatch:
+
+concurrency:
+  group: main-${{ github.workflow }}  # same group per workflow on main
+  cancel-in-progress: true         
 jobs:
     changed_packages:
         name: 'Determine which apps changed'
