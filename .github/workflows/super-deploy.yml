@@ -16,18 +16,16 @@ jobs:
         runs-on: ubuntu-latest 
         name: 'Deploy API'
         needs: changed_packages
-        if: ${{ needs.changed_packages.outputs.api_changed == 'true' }}
         steps:
           - run: echo "Deploying API"
-            shell: bash
+            shell: sleep 30
 
     deploy_ui:
         runs-on: ubuntu-latest
         name: 'Deploy UI'
-        needs: changed_packages
-        if: ${{ needs.changed_packages.outputs.ui_changed == 'true' }}
+        needs: [changed_packages, deploy_api]
         steps:
           - run: echo "Deploying UI"
-            shell: bash
+            shell: sleep 30
 
 
