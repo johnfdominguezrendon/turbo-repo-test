@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: main-${{ github.workflow }}  # same group per workflow on main
+  group: main-${{ github.workflow }}  # same group per workflow on main comment
   cancel-in-progress: true         
 jobs:
 
